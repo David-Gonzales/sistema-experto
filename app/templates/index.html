@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/zep.min.css') }}">
+
+    <title>Sistema experto</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-primary sticky-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <i class="bi bi-robot"></i>
+          Inteligencia artificial - Sistemas expertos
+        </a>
+      </div>
+    </nav>
+    <div class="container">
+      <div class="card my-3">
+        <h5 class="card-header">
+          Sistema experto para el díagnóstico de diabetes
+        </h5>
+        <div class="card-body">
+          <form method="POST" action="/evaluar">
+            <p class="card-text fw-bold">Ingrese los siguientes datos:</p>
+            <div class="row">
+              <div class="mb-3 col-md-6">
+                <label for="nombre" class="form-label">Nombre:</label>
+                <input type="text" class="form-control" id="nombre" name="nombre"/>
+                <span id="nombre-error" class="text-danger"></span>
+              </div>
+
+              <div class="mb-3 col-md-3">
+                <label for="sexo" class="form-label">Sexo: </label>
+                <select class="form-select" id="sexo" name="sexo">
+                  <option value="0" selected>Seleccionar</option>
+                  <option value="1">Masculino</option>
+                  <option value="2">Femenino</option>
+                </select>
+                <span id="sexo-error" class="text-danger"></span>
+              </div>
+
+              <div class="mb-3 col-md-3">
+                <label for="fechaNacimiento" class="form-label"
+                  >Fecha de nacimiento:
+                </label>
+                <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" />
+                <span id="fechaNacimiento-error" class="text-danger"></span>
+              </div>
+
+              <div class="mb-3 col-md-3">
+                <label for="talla" class="form-label">Talla (m):</label>
+                <input type="number" class="form-control" id="talla" name="talla" step=".01" placeholder="Ejm. 1.53"/>
+                <span id="talla-error" class="text-danger"></span>
+              </div>
+
+              <div class="mb-3 col-md-3">
+                <label for="peso" class="form-label">Peso (kg):</label>
+                <input type="number" class="form-control" id="peso" name="peso" step=".01" placeholder="Ejm. 60"/>
+                <span id="peso-error" class="text-danger"></span>
+              </div>
+            </div>
+            <p class="card-text fw-bold">
+              Por favor responsa a las siguientes preguntas:
+            </p>
+            <ul class="list-group  mb-2 shadow-none list-group-numbered">
+              {% for pregunta in preguntas %}
+              <li class="d-flex justify-content-between align-items-start mb-2">
+                <div class="ms-2 me-auto" id="item-{{ pregunta.id }}">
+                  <div class="">{{ pregunta.pregunta }}</div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="{{ pregunta.id }}"
+                      id="{{ pregunta.id }}-si"
+                      value="1"
+                    />
+                    <label class="form-check-label" for="{{ pregunta.id }}-si"
+                      >SÍ</label
+                    >
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="{{ pregunta.id }}"
+                      id="{{ pregunta.id }}-no"
+                      value="0"
+                    />
+                    <label class="form-check-label" for="{{ pregunta.id }}-no"
+                      >NO</label
+                    >
+                  </div>
+                  <span id="{{ pregunta.id }}-error" class="text-danger"></span>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+
+            <div class="d-grid gap-2 col-6 mx-auto">
+              <button type="submit" class="btn btn-primary">
+                Realizar evaluación
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.querySelector("form");
+
+      form.addEventListener("submit", (event) => {
+        let hayErrores = false;
+        const sexo = document.getElementById("sexo").value;
+        const fechaNacimiento = document.getElementById("fechaNacimiento").value;
+        const talla = document.getElementById("talla").value;
+        const peso = document.getElementById("peso").value;
+        const nombre = document.getElementById("nombre").value;
+        const inputRequeridos = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p12', 'p13', 'p14', 'p15', 'p16'
+                                  , 'p17', 'p18', 'p19', 'p20', 'p21', 'p22', 'p23', 'p24', 'p25', 'p26'];
+        let hasErrors = false;
+
+        document.getElementById('nombre-error').textContent = '';
+        document.getElementById('sexo-error').textContent = '';
+        document.getElementById('fechaNacimiento-error').textContent = '';
+        document.getElementById('talla-error').textContent = '';
+        document.getElementById('peso-error').textContent = '';
+
+        inputRequeridos.forEach(id => {
+          const checkedInput = document.querySelector(`input[name="${id}"]:checked`);
+          if (!checkedInput) {
+            document.getElementById(`${id}-error`).textContent = ''; 
+          }
+        });
+
+        if (!sexo || sexo == 0) {
+          event.preventDefault();
+          document.getElementById("sexo-error").textContent = "El item es obligatorio";
+          hayErrores = true;
+        }
+        if (!nombre) {
+          event.preventDefault();
+          document.getElementById("nombre-error").textContent = "El item es obligatorio";
+          hayErrores = true;
+        }
+        if (!fechaNacimiento) {
+          event.preventDefault();
+          document.getElementById("fechaNacimiento-error").textContent = "El item es obligatorio";
+          hayErrores = true;
+        }
+        if (!talla) {
+          event.preventDefault();
+          document.getElementById("talla-error").textContent = "El item es obligatorio";
+          hayErrores = true;
+        }
+        if (!peso) {
+          event.preventDefault();
+          document.getElementById("peso-error").textContent = "El item es obligatorio";
+          hayErrores = true;
+        }
+
+        inputRequeridos.forEach(id => {
+          const checkedInput = document.querySelector(`input[name="${id}"]:checked`);
+          if (!checkedInput) {
+            event.preventDefault();
+            document.getElementById(`${id}-error`).textContent = 'Debes seleccionar una respuesta'; 
+            hayErrores = true;
+          }
+        });
+
+        if (!hayErrores) {
+          form.submit();
+        }
+      });
+    </script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
